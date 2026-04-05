@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolo Web — AMA Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080808;
+  --cobre: #C8863F;
+  --cobre2: #E8A85C;
+  --cobre3: rgba(200,134,63,0.15);
+  --cobre-glow: rgba(200,134,63,0.35);
+  --crema: #F0EBE0;
+  --blanco: #FAFAFA;
+  --gris: rgba(240,235,224,0.45);
+  --linea: rgba(200,134,63,0.2);
+  --linea2: rgba(240,235,224,0.07);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--crema);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:15px;
+  line-height:1.7;
+  overflow-x:hidden;
+  cursor:none;
+}
+.cursor{width:10px;height:10px;background:var(--cobre);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:screen;}
+.cursor-ring{width:36px;height:36px;border:1px solid var(--cobre);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;opacity:0.5;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9000;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px var(--cobre-glow),0 0 60px rgba(200,134,63,0.1)}50%{box-shadow:0 0 40px var(--cobre-glow),0 0 100px rgba(200,134,63,0.2)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes orbit{from{transform:rotate(0deg) translateX(100px) rotate(0deg)}to{transform:rotate(360deg) translateX(100px) rotate(-360deg)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes check-pop{0%{transform:scale(0) rotate(-10deg);opacity:0}70%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes line-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes number-glow{0%,100%{text-shadow:0 0 20px var(--cobre-glow)}50%{text-shadow:0 0 40px var(--cobre-glow),0 0 80px rgba(200,134,63,0.3)}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 40px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 60%,rgba(200,134,63,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 20% 20%,rgba(200,134,63,0.05) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 80% 80%,rgba(200,134,63,0.05) 0%,transparent 60%);}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--linea2) 1px,transparent 1px),linear-gradient(90deg,var(--linea2) 1px,transparent 1px);background-size:80px 80px;mask-image:radial-gradient(ellipse 80% 80% at center,black 40%,transparent 100%);}
+.orbit-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:0;height:0;}
+.orb{position:absolute;width:6px;height:6px;background:var(--cobre);border-radius:50%;opacity:0.5;animation:orbit linear infinite;}
+.orb:nth-child(1){animation-duration:8s;}
+.orb:nth-child(2){animation-duration:14s;animation-delay:-5s;width:4px;height:4px;opacity:0.3;}
+.orb:nth-child(3){animation-duration:20s;animation-delay:-10s;width:3px;height:3px;opacity:0.2;}
+.hero-tag{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:0.3em;color:var(--cobre);background:var(--cobre3);border:1px solid var(--linea);padding:8px 20px;display:inline-block;margin-bottom:48px;animation:fadeIn 0.6s ease both;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(52px,10vw,120px);font-weight:800;line-height:0.92;letter-spacing:-0.03em;animation:fadeUp 0.8s ease 0.2s both;}
+.hero h1 .l1{color:var(--blanco);display:block;}
+.hero h1 .l2{display:block;background:linear-gradient(90deg,var(--cobre),var(--cobre2),var(--cobre),var(--cobre2));background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp 0.8s ease 0.2s both,shimmer 3s linear 1s infinite;}
+.hero-sub{font-size:16px;color:var(--gris);margin-top:36px;max-width:520px;animation:fadeUp 0.8s ease 0.5s both;line-height:1.6;}
+.hero-divider{width:1px;height:80px;background:linear-gradient(to bottom,var(--cobre),transparent);margin:60px auto 0;animation:fadeIn 1s ease 0.8s both;}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;}
+section{padding:100px 40px;}
+.section-label{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:0.3em;color:var(--cobre);text-transform:uppercase;margin-bottom:20px;opacity:0.8;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.05;letter-spacing:-0.02em;color:var(--blanco);margin-bottom:60px;}
+.section-title span{color:var(--cobre);}
+
+/* PIPELINE */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);position:relative;margin-bottom:70px;}
+.pipeline::before{content:'';position:absolute;top:44px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--cobre),var(--cobre2),var(--cobre),transparent);animation:line-grow 1.5s ease 0.5s both;transform-origin:left;}
+.pipe-step{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;opacity:0;animation:fadeUp 0.6s ease both;}
+.pipe-step:nth-child(1){animation-delay:0.3s}.pipe-step:nth-child(2){animation-delay:0.5s}.pipe-step:nth-child(3){animation-delay:0.7s}.pipe-step:nth-child(4){animation-delay:0.9s}.pipe-step:nth-child(5){animation-delay:1.1s}
+.pipe-icon{width:88px;height:88px;border-radius:50%;border:1px solid var(--cobre);display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--cobre3);position:relative;transition:all 0.3s ease;animation:glow-pulse 4s ease-in-out infinite;}
+.pipe-step:nth-child(2) .pipe-icon{animation-delay:0.8s}.pipe-step:nth-child(3) .pipe-icon{animation-delay:1.6s}.pipe-step:nth-child(4) .pipe-icon{animation-delay:2.4s}.pipe-step:nth-child(5) .pipe-icon{animation-delay:3.2s}
+.pipe-icon:hover{transform:scale(1.1);background:rgba(200,134,63,0.25);}
+.pipe-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--blanco);letter-spacing:0.03em;}
+.pipe-tool{font-family:'Syne Mono',monospace;font-size:10px;color:var(--cobre);letter-spacing:0.15em;background:var(--cobre3);padding:4px 10px;border:1px solid var(--linea);}
+
+/* STACK GRID */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--linea);border:1px solid var(--linea);margin-bottom:0;}
+.stack-card{background:#0D0D0D;padding:32px 28px;transition:background 0.3s;position:relative;overflow:hidden;}
+.stack-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cobre),var(--cobre2));transform:scaleX(0);transform-origin:left;transition:transform 0.4s ease;}
+.stack-card:hover{background:rgba(200,134,63,0.06);}
+.stack-card:hover::before{transform:scaleX(1);}
+.stack-emoji{font-size:28px;margin-bottom:14px;display:block;animation:float 3s ease-in-out infinite;}
+.stack-card:nth-child(2) .stack-emoji{animation-delay:0.5s}.stack-card:nth-child(3) .stack-emoji{animation-delay:1s}.stack-card:nth-child(4) .stack-emoji{animation-delay:1.5s}.stack-card:nth-child(5) .stack-emoji{animation-delay:2s}.stack-card:nth-child(6) .stack-emoji{animation-delay:2.5s}
+.stack-card h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--blanco);margin-bottom:8px;}
+.stack-card p{font-size:13px;color:var(--gris);line-height:1.6;}
+.stack-badge{display:inline-block;margin-top:14px;font-family:'Syne Mono',monospace;font-size:10px;color:#4CAF50;border:1px solid rgba(76,175,80,0.3);background:rgba(76,175,80,0.08);padding:3px 10px;letter-spacing:0.1em;}
+
+/* ROLE BLOCKS */
+.role-wrap{border:1px solid var(--linea);position:relative;overflow:hidden;margin-bottom:4px;}
+.role-wrap::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--cobre),var(--cobre2));}
+.role-header{display:flex;align-items:center;gap:28px;padding:36px 48px;background:linear-gradient(90deg,rgba(200,134,63,0.1),transparent);border-bottom:1px solid var(--linea);}
+.role-emoji{font-size:36px;width:72px;height:72px;border-radius:50%;border:1px solid var(--linea);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--cobre3);}
+.role-text h2{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--blanco);letter-spacing:-0.02em;line-height:1;}
+.role-text p{font-size:11px;color:var(--cobre);margin-top:6px;font-family:'Syne Mono',monospace;letter-spacing:0.12em;}
+.role-body{padding:48px 48px 48px 80px;}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;}
+.step{display:grid;grid-template-columns:56px 1fr;gap:28px;padding:32px 0;border-bottom:1px solid var(--linea2);align-items:start;opacity:0;transform:translateX(-20px);transition:opacity 0.5s ease,transform 0.5s ease;}
+.step.visible{opacity:1;transform:translateX(0);}
+.step:last-child{border-bottom:none;}
+.step-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--cobre);line-height:1;text-align:right;animation:number-glow 3s ease-in-out infinite;opacity:0.7;}
+.step-content h4{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--blanco);margin-bottom:10px;letter-spacing:-0.01em;}
+.step-content p{font-size:14px;color:var(--gris);line-height:1.75;}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.tag{font-family:'Syne Mono',monospace;font-size:10px;padding:5px 12px;border:1px solid var(--linea);color:var(--cobre);letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;}
+.tag:hover{background:var(--cobre3);border-color:var(--cobre);}
+.code-block{background:#0A0A0A;border:1px solid rgba(200,134,63,0.25);border-left:3px solid var(--cobre);padding:22px 26px;margin-top:16px;font-family:'Syne Mono',monospace;font-size:12px;color:rgba(240,235,224,0.65);line-height:1.9;overflow-x:auto;}
+.code-block .c{color:rgba(200,134,63,0.5);}
+.code-block .h{color:var(--cobre2);}
+.code-block .k{color:#7ECFFF;}
+.alert{border:1px solid var(--cobre);background:rgba(200,134,63,0.08);padding:24px 28px;margin-top:32px;display:flex;gap:16px;align-items:flex-start;position:relative;overflow:hidden;}
+.alert::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--cobre),transparent);}
+.alert-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.alert p{font-size:14px;color:rgba(240,235,224,0.75);line-height:1.7;}
+.alert strong{color:var(--cobre2);}
+
+/* CHECKLIST */
+.check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:60px;}
+.check-col{background:#0D0D0D;border:1px solid var(--linea);position:relative;overflow:hidden;}
+.check-col::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.check-col:nth-child(1)::after{background:linear-gradient(90deg,#C8863F,#E8A85C);}
+.check-col:nth-child(2)::after{background:linear-gradient(90deg,#4A9EE8,#6EC6FF);}
+.check-col:nth-child(3)::after{background:linear-gradient(90deg,#4CAF50,#81C784);}
+.check-header{padding:28px 32px;border-bottom:1px solid var(--linea);}
+.check-header h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--blanco);margin-bottom:4px;}
+.check-header p{font-family:'Syne Mono',monospace;font-size:10px;color:var(--cobre);letter-spacing:0.15em;}
+.check-items{padding:24px 32px;}
+.check-item{display:flex;align-items:flex-start;gap:14px;padding:11px 0;border-bottom:1px solid var(--linea2);font-size:13.5px;color:rgba(240,235,224,0.7);line-height:1.5;transition:color 0.2s;}
+.check-item:last-child{border-bottom:none;}
+.check-item:hover{color:var(--crema);}
+.check-box{width:20px;height:20px;border:1px solid var(--linea);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.2s;cursor:pointer;background:transparent;user-select:none;}
+.check-box.done{background:var(--cobre);border-color:var(--cobre);animation:check-pop 0.3s ease both;}
+.check-box.done::after{content:'✓';font-size:11px;color:var(--bg);font-weight:700;}
+.check-item.done{color:rgba(240,235,224,0.3);text-decoration:line-through;}
+
+/* RULES */
+.rules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:60px;}
+.rule-card{background:#0D0D0D;border:1px solid var(--linea);padding:40px 36px;position:relative;overflow:hidden;transition:background 0.3s;}
+.rule-card:hover{background:rgba(200,134,63,0.05);}
+.rule-num{font-family:'Syne',sans-serif;font-size:80px;font-weight:800;color:rgba(200,134,63,0.07);line-height:1;position:absolute;top:20px;right:24px;}
+.rule-card h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--blanco);margin-bottom:12px;letter-spacing:-0.01em;}
+.rule-card p{font-size:14px;color:var(--gris);line-height:1.7;position:relative;z-index:1;}
+
+/* FOOTER */
+footer{padding:80px 40px;text-align:center;border-top:1px solid var(--linea);}
+.footer-line{font-family:'Syne Mono',monospace;font-size:11px;color:rgba(240,235,224,0.2);letter-spacing:0.25em;text-transform:uppercase;}
+.footer-line span{color:var(--cobre);animation:blink 1.5s ease-in-out infinite;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .pipeline{grid-template-columns:repeat(3,1fr)}.pipeline::before{display:none}
+  .check-grid{grid-template-columns:1fr}
+  .rules-grid{grid-template-columns:1fr}
+  .role-body{padding:32px 32px 32px 48px}
+}
+@media(max-width:640px){
+  section{padding:72px 24px}
+  .hero{padding:60px 24px}
+  .pipeline{grid-template-columns:repeat(2,1fr);gap:24px}
+  .role-header{padding:24px}
+  .role-body{padding:24px}
+  .step{grid-template-columns:40px 1fr;gap:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="orbit-wrap">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+  <div class="hero-tag">PROTOCOLO INTERNO · EQUIPO WEB · AMA STUDIO</div>
+  <h1>
+    <span class="l1">DEL FIGMA</span>
+    <span class="l2">AL SITIO VIVO</span>
+  </h1>
+  <p class="hero-sub">El proceso completo. Sin gaps, sin interpretación, sin sorpresas. Lo que entra en Figma, sale igual en el navegador.</p>
+  <div class="hero-divider"></div>
+</div>
+
+<!-- STACK -->
+<section>
+  <div class="container">
+    <div class="section-label">// 01 — El sistema</div>
+    <h2 class="section-title">Cinco herramientas.<br><span>Un resultado exacto.</span></h2>
+
+    <div class="pipeline">
+      <div class="pipe-step"><div class="pipe-icon">🎨</div><div class="pipe-name">Diseño</div><div class="pipe-tool">FIGMA</div></div>
+      <div class="pipe-step"><div class="pipe-icon">🔍</div><div class="pipe-name">Handoff</div><div class="pipe-tool">DEV MODE</div></div>
+      <div class="pipe-step"><div class="pipe-icon">⚡</div><div class="pipe-name">Código</div><div class="pipe-tool">VS CODE</div></div>
+      <div class="pipe-step"><div class="pipe-icon">🗄️</div><div class="pipe-name">Repositorio</div><div class="pipe-tool">GITHUB</div></div>
+      <div class="pipe-step"><div class="pipe-icon">🌐</div><div class="pipe-name">Publicación</div><div class="pipe-tool">NETLIFY</div></div>
+    </div>
+
+    <div class="stack-grid">
+      <div class="stack-card"><span class="stack-emoji">🎨</span><h3>Figma</h3><p>La fuente de verdad visual. Todo lo que el dev construye sale de aquí. Si no está en Figma, no existe.</p><span class="stack-badge">GRATIS</span></div>
+      <div class="stack-card"><span class="stack-emoji">💻</span><h3>VS Code</h3><p>Donde el dev escribe el código. El resultado es nuestro 100% — sin plataformas intermedias.</p><span class="stack-badge">GRATIS</span></div>
+      <div class="stack-card"><span class="stack-emoji">🗄️</span><h3>GitHub</h3><p>Guarda y versiona el código. Si algo falla, se revierte. El historial completo siempre disponible.</p><span class="stack-badge">GRATIS</span></div>
+      <div class="stack-card"><span class="stack-emoji">🚀</span><h3>Netlify</h3><p>Conecta a GitHub y publica automático en cada push. El sitio actualiza en menos de 30 segundos.</p><span class="stack-badge">GRATIS</span></div>
+      <div class="stack-card"><span class="stack-emoji">🌍</span><h3>Dominio</h3><p>El único costo fijo. Se conecta en Netlify con HTTPS incluido. Nada más que pagar.</p><span class="stack-badge" style="color:#E8A85C;border-color:rgba(232,168,92,0.3);background:rgba(232,168,92,0.08);">~$15 USD/AÑO</span></div>
+      <div class="stack-card"><span class="stack-emoji">✍️</span><h3>Decap CMS</h3><p>Panel visual para editar contenido sin tocar código. El sitio sigue siendo código puro, nuestro.</p><span class="stack-badge">GRATIS · OPCIONAL</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- DISEÑADORA -->
+<section>
+  <div class="container">
+    <div class="section-label">// 02 — Rol diseñadora</div>
+    <h2 class="section-title">Lo que hace<br><span>la diseñadora</span></h2>
+    <div class="role-wrap">
+      <div class="role-header">
+        <div class="role-emoji">🎨</div>
+        <div class="role-text"><h2>DISEÑADORA</h2><p>ENTREGA EN FIGMA · FUENTE DE VERDAD VISUAL</p></div>
+      </div>
+      <div class="role-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-content">
+              <h4>Crear el sistema de diseño en Figma</h4>
+              <p>Una página "Estilos" con todos los colores, tipografías y espaciados como variables de Figma. El dev los exporta como configuración — cualquier cambio de marca se propaga en todo el sitio de golpe.</p>
+              <div class="tags"><span class="tag">Variables de color</span><span class="tag">Estilos de texto</span><span class="tag">Tokens de espaciado</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-content">
+              <h4>Nombrar cada capa con lógica</h4>
+              <p>Nunca "Rectangle 47" ni "Group 12". Cada capa describe qué es. El dev navega el Figma igual que navegamos un sitio — nombres sin sentido triplican el trabajo y multiplican los errores.</p>
+              <div class="tags"><span class="tag">Hero / HeroCTA</span><span class="tag">NavItem</span><span class="tag">ServiceCard</span><span class="tag">Footer / FooterLinks</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-content">
+              <h4>Crear componentes para todo lo que se repite</h4>
+              <p>Botones, tarjetas, íconos, testimonios — si aparece más de una vez, es un componente. El dev ve sus propiedades y lo replica sin medir elemento por elemento.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <div class="step-content">
+              <h4>Diseñar Desktop Y Mobile — los dos, obligatorio</h4>
+              <p>Por cada sección: frame a 1440px (desktop) y 375px (móvil). Si el diseño móvil no existe el dev no puede inventarlo — lo que imagine quedará diferente a la visión.</p>
+              <div class="tags"><span class="tag">1440px — Desktop</span><span class="tag">375px — Mobile</span><span class="tag">768px — Tablet (opcional)</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">05</div>
+            <div class="step-content">
+              <h4>Exportar assets con nombres descriptivos</h4>
+              <p>Logos e íconos → SVG. Fotos → WebP o JPG comprimido. Fondos con transparencia → PNG. No "image.png" — sino "sofia-hero-foto.webp". El dev los usa tal cual.</p>
+              <div class="tags"><span class="tag">Logos → SVG</span><span class="tag">Fotos → WebP</span><span class="tag">Transparencias → PNG</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">06</div>
+            <div class="step-content">
+              <h4>Compartir el archivo en modo Dev</h4>
+              <p>Figma → Compartir → Invitar al dev con rol "Can view". Esto activa el Dev Mode para él sin que pueda editar el archivo. El link va junto con las notas de entrega.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">07</div>
+            <div class="step-content">
+              <h4>Escribir las notas de entrega</h4>
+              <p>Un doc corto en Notion o Google Doc con: secciones del sitio, elementos con animaciones o hover states, fuentes de Google Fonts, y cualquier comportamiento que no sea obvio viendo el diseño estático.</p>
+            </div>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="alert-icon">⚡</div>
+          <p><strong>Regla de oro:</strong> Si no está en el Figma, no existe para el dev. Animaciones, hover states, efectos en scroll — todo tiene que estar anotado. Lo que se deje a la imaginación del dev quedará diferente a lo que visualizaste.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESARROLLADOR -->
+<section>
+  <div class="container">
+    <div class="section-label">// 03 — Rol desarrollador</div>
+    <h2 class="section-title">Lo que hace<br><span>el desarrollador</span></h2>
+    <div class="role-wrap">
+      <div class="role-header">
+        <div class="role-emoji">⚡</div>
+        <div class="role-text"><h2>DESARROLLADOR</h2><p>CONSTRUYE EN VS CODE · GITHUB · NETLIFY</p></div>
+      </div>
+      <div class="role-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-content">
+              <h4>Activar Dev Mode en Figma</h4>
+              <p>Clic en el ícono "&lt;/&gt;" en la barra superior derecha. Al hacer clic en cualquier elemento, el panel muestra el CSS generado, dimensiones en px, colores en HEX y tipografía completa. Cero adivinanzas.</p>
+              <div class="tags"><span class="tag">CSS auto-generado</span><span class="tag">Medidas exactas</span><span class="tag">Colores HEX/RGBA</span><span class="tag">Tipografía completa</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-content">
+              <h4>Extraer el sistema de diseño como variables CSS</h4>
+              <p>Ir a la página "Estilos" del Figma. Copiar todos los valores. Crear un archivo <code style="background:rgba(200,134,63,0.15);padding:2px 6px;font-family:'Syne Mono',monospace;font-size:11px;color:var(--cobre2)">variables.css</code> antes de tocar ninguna sección. Este archivo es la base de todo el sitio.</p>
+              <div class="code-block">
+<span class="c">/* variables.css — extraído de Figma */</span>
+<span class="k">:root</span> {
+  <span class="h">--color-negro</span>: #0D0D0D;
+  <span class="h">--color-cobre</span>: #B5783A;
+  <span class="h">--color-crema</span>: #F5F0E8;
+  <span class="h">--font-display</span>: 'Cormorant Garamond', serif;
+  <span class="h">--font-body</span>:    'Plus Jakarta Sans', sans-serif;
+  <span class="h">--font-accent</span>:  'Great Vibes', cursive;
+}</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-content">
+              <h4>Usar el plugin "Figma to Code" para acelerar</h4>
+              <p>Buscar "Figma to Code" en Figma Community (gratuito). Seleccionar un frame completo y generar HTML+CSS o React+Tailwind. No es código final — es el 60% del trabajo hecho. El dev lo limpia, adapta y hace responsive.</p>
+              <div class="tags"><span class="tag">Plugin gratuito</span><span class="tag">HTML + CSS</span><span class="tag">React + Tailwind</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <div class="step-content">
+              <h4>Estructura de carpetas del proyecto</h4>
+              <div class="code-block">
+<span class="c"># Estructura base</span>
+proyecto/
+├── index.html
+├── <span class="h">css/</span>
+│   ├── variables.css    <span class="c"># del sistema de diseño</span>
+│   ├── base.css
+│   └── sections.css
+├── <span class="h">assets/</span>
+│   ├── images/          <span class="c"># WebP, JPG</span>
+│   ├── icons/           <span class="c"># SVG</span>
+│   └── fonts/
+└── js/
+    └── main.js</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">05</div>
+            <div class="step-content">
+              <h4>Construir sección por sección — de arriba hacia abajo</h4>
+              <p>Navbar → Hero → Secciones → Footer. Para cada sección: Figma Dev Mode → leer medidas → copiar CSS → adaptar responsive (mobile-first) → probar en navegador → ajustar hasta que coincida exacto. Solo entonces avanzar a la siguiente.</p>
+              <div class="tags"><span class="tag">Mobile-first siempre</span><span class="tag">Revisar vs Figma antes de avanzar</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">06</div>
+            <div class="step-content">
+              <h4>Subir a GitHub con commits descriptivos</h4>
+              <div class="code-block">
+<span class="c"># Primer setup</span>
+<span class="h">git init</span>
+<span class="h">git add .</span>
+<span class="h">git commit</span> -m <span class="k">"estructura base del proyecto"</span>
+<span class="h">git push</span> origin main
+
+<span class="c"># Por cada sección terminada</span>
+<span class="h">git commit</span> -m <span class="k">"agrega sección hero completa"</span>
+<span class="h">git commit</span> -m <span class="k">"corrige responsive servicios en móvil"</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">07</div>
+            <div class="step-content">
+              <h4>Conectar GitHub a Netlify y publicar</h4>
+              <p>Netlify → New site → Import from Git → seleccionar repositorio. Desde ese momento cada push actualiza el sitio vivo automáticamente. Para el dominio: Netlify → Domain Settings → conectar.</p>
+              <div class="tags"><span class="tag">Deploy automático en cada push</span><span class="tag">HTTPS gratis incluido</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">08</div>
+            <div class="step-content">
+              <h4>Instalar Decap CMS para edición sin código</h4>
+              <p>Se configura una sola vez. Genera panel en /admin donde el equipo edita textos e imágenes visualmente. El código del sitio sigue siendo limpio, en GitHub, 100% nuestro.</p>
+            </div>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="alert-icon">⚡</div>
+          <p><strong>Regla de oro:</strong> El Figma es la ley. Si el resultado en el navegador es diferente al diseño, hay que ajustarlo hasta que coincida. Para cambiar el diseño la solicitud va a la diseñadora — ella actualiza el Figma y reentrega. No se improvisa en el código.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section>
+  <div class="container">
+    <div class="section-label">// 04 — Control de calidad</div>
+    <h2 class="section-title">Checklist de entrega<br><span>— nadie avanza sin esto</span></h2>
+    <div class="check-grid">
+      <div class="check-col">
+        <div class="check-header"><h3>🎨 Diseñadora entrega</h3><p>ANTES DE PASAR AL DEV</p></div>
+        <div class="check-items">
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Variables de color y tipografía definidas</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Todas las capas con nombres descriptivos</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Componentes para elementos repetidos</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Versión Desktop 1440px completa</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Versión Mobile 375px completa</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Assets nombrados y exportables</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Acceso Dev compartido</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Notas de entrega escritas</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Animaciones e interacciones anotadas</div>
+        </div>
+      </div>
+      <div class="check-col">
+        <div class="check-header"><h3>⚡ Desarrollador entrega</h3><p>ANTES DE MARCAR COMO LISTO</p></div>
+        <div class="check-items">
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Variables CSS creadas desde Figma</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Todas las secciones pixel-perfect</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Responsive en móvil, tablet y desktop</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Assets optimizados y comprimidos</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Código en GitHub con commits claros</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Sitio publicado en Netlify</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Dominio conectado y HTTPS activo</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Panel de edición instalado (si aplica)</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Revisión final vs Figma, sección por sección</div>
+        </div>
+      </div>
+      <div class="check-col">
+        <div class="check-header"><h3>✅ Sofía aprueba</h3><p>REVISIÓN FINAL ANTES DE LIVE</p></div>
+        <div class="check-items">
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>El sitio se ve igual al Figma</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Todos los textos son correctos</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Todos los links funcionan</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Carga rápido en móvil</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>El CTA o formulario principal funciona</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Dominio conectado correctamente</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Se puede editar sin llamar al dev</div>
+          <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div>Se ve bien en iPhone y Android</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REGLAS -->
+<section>
+  <div class="container">
+    <div class="section-label">// 05 — Cultura del equipo</div>
+    <h2 class="section-title">Las reglas<br><span>no son opcionales</span></h2>
+    <div class="rules-grid">
+      <div class="rule-card"><div class="rule-num">1</div><h3>Figma es la ley</h3><p>El Figma es la única fuente de verdad visual. Si hay duda sobre cómo debe verse algo, la respuesta está ahí. Las decisiones de diseño no se toman en el código.</p></div>
+      <div class="rule-card"><div class="rule-num">2</div><h3>Los cambios tienen flujo</h3><p>Solicitud de cambio visual → diseñadora → actualiza Figma → entrega al dev. Nunca se modifica el diseño directo en código sin actualizar el Figma primero.</p></div>
+      <div class="rule-card"><div class="rule-num">3</div><h3>Commits con sentido</h3><p>Cada push a GitHub lleva mensaje claro: "Agrega sección servicios", "Corrige responsive hero móvil". Sin "update", sin "fix", sin mensajes vagos.</p></div>
+      <div class="rule-card"><div class="rule-num">4</div><h3>El checklist no es opcional</h3><p>Nadie marca una entrega como completa sin haber pasado su checklist. Si falta un ítem, no se entrega. El estándar no baja porque hay prisa.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-line">AMA Studio · Protocolo Web v1.0 · Uso interno del equipo · amastudio.online <span>█</span></div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cursor.style.transform=`translate(${mx-5}px,${my-5}px)`;
+});
+(function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.transform=`translate(${rx-18}px,${ry-18}px)`;
+  requestAnimationFrame(animRing);
+})();
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting) setTimeout(()=>e.target.classList.add('visible'),i*80);
+  });
+},{threshold:0.1});
+document.querySelectorAll('.step').forEach(s=>observer.observe(s));
+
+// CHECKLIST
+function toggleCheck(box){
+  box.classList.toggle('done');
+  box.parentElement.classList.toggle('done');
+}
+</script>
+</body>
+</html>
